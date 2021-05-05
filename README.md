@@ -4,11 +4,9 @@ An embedded DSL for defining source code pretty printers implemented in OCaml
 ## Concept
 The layout language is designed such that it fits well over a structurally recursive pass of some inductive data-structure; an abstract representation of the thing you wish to pretty print.
 
-A layout is a tree of text literals composed together either padded, unpadded or with a linebreak. The layout solver will select compositions in a layout and convert them into linebreaks, in order make the layout fit within a given layout buffer width. While doing so it will respect the annotated properties that the compositions are constructed under; these properties being constructed by __fix__, __grp__, __seq__, __nest__ and __mark__.
+A layout is a tree of text literals composed together with either padded, unpadded compositions or with a line-break. The layout solver will select compositions in a layout and convert them into line-breaks, in order to make the layout fit within a given layout buffer width. It will do this in a greedy way, fitting as many literals on a line as possible. While doing so it will respect the annotated properties that the compositions are constructed under.
 
-The solver is implemented two via two accompanying functions, a _compiler_ implemented as __compile__, and a _renderer_ implemented as __render__.
-
-Your layout function will build a layout. The layout is should then be passed to the accompanying compiler which will create a document optimised and ready for rendering. The accompanying renderer will then take the document along with parameters for indentation width and buffer width, and will render the final print as a string.
+The solver being an abstract concept, is concretely implemented via two accompanying functions, a _compiler_ implemented as __compile__, and a _renderer_ implemented as __render__.
 
 ## Grammar
 ```text
@@ -292,14 +290,14 @@ The example above might make it seem trivial, and that infix fixed compositions 
 Infix fixed compositions are useful when you need to fix a literal to the beginning or end of some other layout, e.g. separators between items in a sequence or list-like data structure. Without this feature you would again need to use an accumulator variable if you want to fix to the next literal, and probably need continuations if you want to fix to the last literal.
 
 ## Solving the layout
-After you have built your layout, you need to compile and renderer it:
+Your custom layout function (pretty printer) will build a layout, which you then need to compile and render:
 ```OCaml
 ...
 compile layout @@ fun document ->
 render document 2 80 @@ fun result ->
 ...
 ```
-You give your layout to the compiler, which gives you back a document ready for rendering, which you in turn give to the renderer along with arguments for indentation width and layout buffer width; in the above case indentation width is 2 and the layout buffer width is 80.
+I.e. the layout should be given to the compiler, which gives you back a document ready for rendering, which you in turn give to the renderer along with arguments for indentation width and layout buffer width; in the above case indentation width is 2 and the layout buffer width is 80.
 
 The reason for splitting the solver into __compile__ and __render__, is in case the result is to be displayed in a buffer where the width is be variable; i.e. you will not need to re-compile the layout between renderings using varying buffer width.
 
