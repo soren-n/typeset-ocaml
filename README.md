@@ -46,7 +46,7 @@ The __null__ will be eliminated from the layout by the compiler, and will not be
 let foobar = ~$"foo" <&> null <&> ~$"bar"
 ```
 
-When rendering __foobar__ the result will be:
+When rendering __foobar__, when the layout fits in the layout buffer, the result will be:
 ```Text
        7
        |
@@ -59,14 +59,14 @@ These are the visible terminals that we are typesetting.
 ```OCaml
 let foo = ~$"foo"
 ```
-When rendering __foo__ the result will be:
+When rendering __foo__, when the layout fits in the layout buffer, the result will be:
 ```Text
     4
     |
 foo |
     |
 ```
-When the literal fits within the layout buffer, and will simply overflow the buffer when it does not:
+It will simply overflow the buffer when it does not:
 ```Text
   2
   |
@@ -75,20 +75,20 @@ fo|o
 ```
 
 ## Fix constructor
-Sometimes you need to render a part of some layout as inline, i.e. that its compositions should not be broken; this is what the __fix__ constructor is for. On other words a fixed layout is treated as a literal.
+Sometimes you need to render a part of some layout as inline, i.e. that its compositions should not be broken; this is what the __fix__ constructor is for. In other words a fixed layout is treated as a literal.
 
 ```OCaml
 let foobar = fix (~$"foo" <&> ~$"bar")
 ```
 
-When rendering the fixed layout __foobar__ the result will be:
+When rendering the fixed layout __foobar__, when the layout fits in the layout buffer, the result will be:
 ```Text
        7
        |
 foobar |
        |
 ```
-When the layout fits within the layout buffer, and will overflow the buffer when it does not:
+It will overflow the buffer when it does not:
 ```Text
   2
   |
@@ -103,14 +103,14 @@ The __grp__ constructor prevents the solver from breaking its compositions, as l
 let foobarbaz = ~$"foo" <&> grp (~$"bar" <&> ~$"baz")
 ```
 
-When rendering __foobarbaz__ the result will be:
+When rendering __foobarbaz__, when the layout fits in the layout buffer, the result will be:
 ```Text
           10
           |
 foobarbaz |
           |
 ```
-When all literals fit within the layout buffer. If one of the literals does not fit within the layout buffer, the result will be:
+If one of the literals does not fit within the layout buffer, the result will be:
 ```Text
        7
        |
@@ -143,14 +143,14 @@ The __seq__ constructor forces the solver to break all of its compositions as so
 let foobarbaz = seq (~$"foo" <&> ~$"bar" <&> ~$"baz")
 ```
 
-When rendering __foobarbaz__ the result will be:
+When rendering __foobarbaz__, when the layout fits in the layout buffer, the result will be:
 ```Text
           10
           |
 foobarbaz |
           |
 ```
-When all literals fit within the layout buffer. If one of the literals does not fit within the layout buffer, the result will be:
+If one of the literals does not fit within the layout buffer, the result will be:
 ```text
        7
        |
@@ -168,14 +168,14 @@ The __nest__ constructor is simply there to provide an extra level of indentatio
 let foobarbaz = ~$"foo" <&> nest (~$"bar" <&> ~$"baz")
 ```
 
-When rendering __foobarbaz__ with a indentation width of 2, the result will be:
+When rendering __foobarbaz__ with a indentation width of 2, when the layout fits in the layout buffer, the result will be:
 ```Text
           10
           |
 foobarbaz |
           |
 ```
-When all literals fit within the layout buffer. If one of the literals does not fit within the layout buffer, the result will be;
+If one of the literals does not fit within the layout buffer, the result will be;
 ```Text
        7
        |
@@ -201,14 +201,14 @@ The __mark__ constructor defines an indentation level, but implicitly sets the i
 let foobarbaz = ~$"foo" <&> mark (~$"bar" <&> ~$"baz")
 ```
 
-When rendering __foobarbaz__ the result will be:
+When rendering __foobarbaz__, when the layout fits in the layout buffer, the result will be:
 ```Text
           10
           |
 foobarbaz |
           |
 ```
-When all literals fit the layout buffer. When one of the literals do not fit, the result will be:
+When one of the literals do not fit, the result will be:
 ```Text
        7
        |
@@ -238,7 +238,7 @@ The forced linebreak composition does just that, it is a pre-broken composition.
 let foobar = ~$"foo" </> ~$"bar"
 ```
 
-When rendering __foobar__ the result will be:
+When rendering __foobar__, when the layout fits in the layout buffer, the result will be:
 ```Text
         8
         |
@@ -254,7 +254,7 @@ The unpadded composition will compose two layouts without any whitespace.
 let foobar = ~$"foo" <&> ~$"bar"
 ```
 
-When rendering __foobar__ the result will be:
+When rendering __foobar__, when the layout fits in the layout buffer, the result will be:
 ```Text
         8
         |
@@ -269,7 +269,7 @@ The padded composition will compose two layouts with whitespace.
 let foobar = ~$"foo" <+> ~$"bar"
 ```
 
-When rendering __foobar__ the result will be:
+When rendering __foobar__, when the layout fits in the layout buffer, the result will be:
 ```Text
         8
         |
