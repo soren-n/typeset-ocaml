@@ -299,7 +299,7 @@ render document 2 80 @@ fun result ->
 ```
 I.e. the layout should be given to the compiler, which gives you back a document ready for rendering, which you in turn give to the renderer along with arguments for indentation width and layout buffer width; in the above case indentation width is 2 and the layout buffer width is 80.
 
-The reason for splitting the solver into __compile__ and __render__, is in case the result is to be displayed in a buffer where the width is be variable; i.e. you will not need to re-compile the layout between renderings using varying buffer width.
+The reason for splitting the solver into __compile__ and __render__, is in case the result is to be displayed in a buffer where the width is variable; i.e. you will not need to re-compile the layout between renderings using varying buffer width.
 
 ## Examples
 For some examples of how to put all these layout constructors together into something more complex and useful, please reference in the examples directory.
