@@ -1,4 +1,5 @@
 opam-version: "2.0"
+name: "typeset"
 version: "0.1"
 synopsis: "An embedded DSL for source code pretty printing"
 maintainer: "Soren Norbaek <sorennorbaek@gmail.com>"
@@ -6,10 +7,13 @@ authors: "Soren Norbaek <sorennorbaek@gmail.com>"
 license: "MIT"
 homepage: "https://github.com/soren-n/typeset-ocaml"
 bug-reports: "https://github.com/soren-n/typeset-ocaml/issues"
+dev-repo: "git+https://github.com/soren-n/typeset-ocaml.git"
+build: [
+  "dune" "build" "-p" name "-j" jobs
+  "@runtest" {with-test}
+]
 depends: [
   "ocaml" {>= "4.08"}
   "dune" {>= "2.8"}
   "qcheck" {>= "0.17"}
 ]
-build: ["dune" "build"]
-dev-repo: "git+https://github.com/soren-n/typeset-ocaml"
