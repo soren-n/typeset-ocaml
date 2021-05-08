@@ -16,7 +16,7 @@ fix u     (Constructor for a fixed layout over a layout u)
 grp u     (Constructor for a group layout over a layout u)
 seq u     (Constructor for a sequence layout over a layout u)
 nest u    (Constructor for a indented/nested layout over a layout u)
-mark u    (Constructor for a indexed margin layout over a layout u)
+pack u    (Constructor for a indexed margin layout over a layout u)
 u </> v   (Forced linebreak composition of layouts u and v)
 u <&> v   (Unpadded composition of layouts u and v)
 u <!&> v  (Infix fixed unpadded composition of layouts u and v)
@@ -194,11 +194,11 @@ foo |
 ```
 In this case _bar_ and _baz_ will overflow the layout buffer because of the given indentation.
 
-## Mark constructor
-The __mark__ constructor defines an indentation level, but implicitly sets the indentation width to the index of the first literal in the layout it annotates. This is e.g. useful if you are pretty printing terms in a lisp-like language, where all other arguments to an application is often "indented" to the same buffer index as the first argument.
+## Pack constructor
+The __pack__ constructor defines an indentation level, but implicitly sets the indentation width to the index of the first literal in the layout it annotates. This is e.g. useful if you are pretty printing terms in a lisp-like language, where all other arguments to an application is often "indented" to the same buffer index as the first argument.
 
 ```OCaml
-let foobarbaz = ~$"foo" <&> mark (~$"bar" <&> ~$"baz")
+let foobarbaz = ~$"foo" <&> pack (~$"bar" <&> ~$"baz")
 ```
 
 When rendering __foobarbaz__, when the layout fits in the layout buffer, the result will be:
