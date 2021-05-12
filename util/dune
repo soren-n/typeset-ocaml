@@ -1,3 +1,3 @@
 (library
-  (name util)
+  (name typeset_util)
   (package typeset))

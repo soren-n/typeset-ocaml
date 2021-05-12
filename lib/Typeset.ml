@@ -1,4 +1,4 @@
-open Util
+open Typeset_util
 open Extra
 
 type attr =

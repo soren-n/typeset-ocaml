@@ -1,4 +1,4 @@
-open Util
+open Typeset_util
 open Extra
 open Typeset
 
@@ -1103,46 +1103,24 @@ let _clean_fix layout return =
   _visit layout return
 
 let pre_normalize layout return =
-  (* print_layout layout (print_endline <== (String.conc "pre_normalize: ")); *)
   _elim_broken layout @@ fun layout1 ->
-  (* print_layout layout1 (print_endline <== (String.conc "_elim_broken: ")); *)
   _lift_lines layout1 @@ fun layout2 ->
-  (* print_layout layout2 (print_endline <== (String.conc "_lift_lines: ")); *)
   _drop_nest_pack layout2 @@ fun layout3 ->
-  (* print_layout layout3 (print_endline <== (String.conc "_drop_nest_pack: ")); *)
   _drop_infix_fix layout3 @@ fun layout4 ->
-  (* print_layout layout4 (print_endline <== (String.conc "_drop_infix_fix: ")); *)
   _reassociate layout4 @@ fun layout5 ->
-  (* print_layout layout5 (print_endline <== (String.conc "_reassociate: ")); *)
   _denull layout5 @@ fun layout6 ->
-  (* print_layout layout6 (print_endline <== (String.conc "_denull: ")); *)
   _identities layout6 @@ fun layout7 ->
-  (* print_layout layout7 (print_endline <== (String.conc "_identities: ")); *)
   _reassociate layout7 @@ fun layout8 ->
-  (* print_layout layout8 (print_endline <== (String.conc "_reassociate: ")); *)
   _lift_nest_pack layout8 @@ fun layout9 ->
-  (* print_layout layout9 (print_endline <== (String.conc "_lift_nest_pack: ")); *)
-  _clean_fix layout9 @@ fun layout10 ->
-  (* print_layout layout10 (print_endline <== (String.conc "_clean_fix: ")); *)
-  (* print_endline "*************************************"; *)
-  return layout10
+  _clean_fix layout9 return
 
 let normalize layout return =
-  (* print_layout layout (print_endline <== (String.conc "normalize: ")); *)
   _elim_broken layout @@ fun layout1 ->
-  (* print_layout layout1 (print_endline <== (String.conc "_elim_broken: ")); *)
   _lift_lines layout1 @@ fun layout2 ->
-  (* print_layout layout2 (print_endline <== (String.conc "_lift_lines: ")); *)
   _drop_nest_pack layout2 @@ fun layout3 ->
-  (* print_layout layout3 (print_endline <== (String.conc "_drop_nest_pack: ")); *)
   _identities layout3 @@ fun layout4 ->
-  (* print_layout layout4 (print_endline <== (String.conc "_identities: ")); *)
   _reassociate layout4  @@ fun layout5 ->
-  (* print_layout layout5 (print_endline <== (String.conc "_reassociate: ")); *)
-  _lift_nest_pack layout5 @@ fun layout6 ->
-  (* print_layout layout6 (print_endline <== (String.conc "_lift_nest_pack: ")); *)
-  (* print_endline "*************************************"; *)
-  return layout6
+  _lift_nest_pack layout5 return
 
 let solve layout tab width return =
   let _null = Null in
