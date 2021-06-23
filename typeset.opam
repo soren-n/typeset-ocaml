@@ -1,6 +1,6 @@
 opam-version: "2.0"
 name: "typeset"
-version: "0.2"
+version: "0.3"
 synopsis: "An embedded DSL for defining source code pretty printers"
 maintainer: "Soren Norbaek <sorennorbaek@gmail.com>"
 authors: "Soren Norbaek <sorennorbaek@gmail.com>"
