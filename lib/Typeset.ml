@@ -1,5 +1,5 @@
-open Typeset_util
-open Extra
+open Cps_toolbox
+open Functional
 
 type attr =
   { pad : bool
@@ -437,44 +437,44 @@ let _structurize doc return =
       _visit comp return
     in
     let _close to_node stack props return =
-      let _lookup = Map.lookup_unsafe_cont Order.int_compare in
-      let _insert = Map.insert_cont Order.int_compare in
+      let _lookup = Map.lookup_unsafe Order.int in
+      let _insert = Map.insert Order.int in
       let rec _visit stack props return =
         match stack with
         | [] -> return props
         | PGrp index :: stack1 ->
-          _lookup index props @@ fun prop ->
+          _lookup index props |> fun prop ->
           begin match prop with
           | PSeq _ -> assert false (* Invariant *)
           | PGrp (from_node, _to_node) ->
             let prop1 = _binary_grp from_node (Some to_node) in
-            _insert index prop1 props @@ fun props1 ->
+            _insert index prop1 props |> fun props1 ->
             _visit stack1 props1 return
           end
         | PSeq index :: stack1 ->
-          _lookup index props @@ fun prop ->
+          _lookup index props |> fun prop ->
           begin match prop with
           | PGrp _ -> assert false (* Invariant *)
           | PSeq (from_node, _to_node) ->
             let prop1 = _binary_seq from_node (Some to_node) in
-            _insert index prop1 props @@ fun props1 ->
+            _insert index prop1 props |> fun props1 ->
             _visit stack1 props1 return
           end
       in
       _visit stack props return
     in
     let _open from_node stack props return =
-      let _insert = Map.insert_cont Order.int_compare in
+      let _insert = Map.insert Order.int in
       let rec _visit stack props return =
         match stack with
         | [] -> return props
         | PGrp index :: stack1 ->
           let prop = _binary_grp from_node None in
-          _insert index prop props @@ fun props1 ->
+          _insert index prop props |> fun props1 ->
           _visit stack1 props1 return
         | PSeq index :: stack1 ->
           let prop = _binary_seq from_node None in
-          _insert index prop props @@ fun props1 ->
+          _insert index prop props |> fun props1 ->
           _visit stack1 props1 return
       in
       _visit stack props return
@@ -559,7 +559,7 @@ let _structurize doc return =
       | FBreak (obj, doc1) ->
         let nodes = identity in
         let pads = identity in
-        let props = Map.make () in
+        let props = Map.empty in
         _visit_obj obj 0 [] nodes pads props @@ fun nodes1 pads1 props1 ->
         let nodes2 = Array.of_list (nodes1 []) in
         _transpose (Map.values props1) nodes2;
@@ -1346,7 +1346,7 @@ let make_state () =
   ; break = false
   ; lvl = 0
   ; pos = 0
-  ; marks = Map.make ()
+  ; marks = Map.empty
   }
 
 let get_head state return = return state.head
@@ -1397,8 +1397,8 @@ let render doc tab width return =
   let _whitespace n = String.make n ' ' in
   let _pad n result return = return (result ^ (_whitespace n)) in
   let _measure obj state return =
-    let _insert = Map.insert_cont Order.int_compare in
-    let _lookup = Map.lookup_cont Order.int_compare in
+    let _insert = Map.insert Order.int in
+    let _lookup = Map.lookup Order.int in
     let rec _visit_obj obj state return =
       match obj with
       | RText data ->
@@ -1420,7 +1420,7 @@ let render doc tab width return =
         _lookup index marks
           (fun _ ->
             get_pos state @@ fun pos ->
-            _insert index pos marks @@ fun marks1 ->
+            _insert index pos marks |> fun marks1 ->
             set_marks marks1 state @@ fun state1 ->
             set_lvl (max lvl pos) state1 @@ fun state2 ->
             _visit_obj obj1 state2 @@ fun state3 ->
@@ -1452,8 +1452,8 @@ let render doc tab width return =
     get_pos state1 return
   in
   let _next_comp obj state return =
-    let _insert = Map.insert_cont Order.int_compare in
-    let _lookup = Map.lookup_cont Order.int_compare in
+    let _insert = Map.insert Order.int in
+    let _lookup = Map.lookup Order.int in
     let rec _visit_obj obj state return =
       match obj with
       | RText data ->
@@ -1481,7 +1481,7 @@ let render doc tab width return =
         _lookup index marks
           (fun _ ->
             get_pos state @@ fun pos ->
-            _insert index pos marks @@ fun marks1 ->
+            _insert index pos marks |> fun marks1 ->
             set_marks marks1 state @@ fun state1 ->
             set_lvl (max lvl pos) state1 @@ fun state2 ->
             _visit_obj obj1 state2 @@ fun state3 ->
@@ -1532,8 +1532,8 @@ let render doc tab width return =
     | RLine obj ->
       _visit_obj obj state1 "" return
   and _visit_obj obj state result return =
-    let _insert = Map.insert_cont Order.int_compare in
-    let _lookup = Map.lookup_cont Order.int_compare in
+    let _insert = Map.insert Order.int in
+    let _lookup = Map.lookup Order.int in
     match obj with
     | RText data ->
       let length = String.length data in
@@ -1570,7 +1570,7 @@ let render doc tab width return =
       _lookup index marks
         (fun _ ->
           get_pos state @@ fun pos ->
-          _insert index pos marks @@ fun marks1 ->
+          _insert index pos marks |> fun marks1 ->
           set_marks marks1 state @@ fun state1 ->
           set_lvl (max lvl pos) state1 @@ fun state2 ->
           _visit_obj obj1 state2 result @@ fun state3 result1 ->

@@ -1,5 +1,5 @@
-open Typeset_util
-open Extra
+open Cps_toolbox
+open Functional
 open Typeset
 
 (*
@@ -1133,8 +1133,8 @@ let solve layout tab width return =
   let _line left right = Line (left, right) in
   let _comp left right pad = Comp (left, right, pad, false) in
   let rec _visit layout head break pos marks return =
-    let _insert = Map.insert_cont Order.int_compare in
-    let _lookup = Map.lookup_cont Order.int_compare in
+    let _insert = Map.insert Order.int in
+    let _lookup = Map.lookup Order.int in
     match layout with
     | Null | Text _ -> return false marks layout
     | Fix layout1 ->
@@ -1162,7 +1162,7 @@ let solve layout tab width return =
     | Pack (index, layout1) ->
       _lookup index marks
         (fun _ ->
-          _insert index pos marks @@ fun marks1 ->
+          _insert index pos marks |> fun marks1 ->
           _visit layout1 head break pos marks1 @@ fun change marks2 layout2 ->
           if not change then return false marks2 layout else
           return true marks2 (_pack index layout2))
@@ -1189,8 +1189,8 @@ let solve layout tab width return =
       _visit right false break pos2 marks2 @@ fun r_change marks3 right1 ->
       return r_change marks3 (_comp left1 right1 pad)
   and _next_comp layout head pos marks return =
-    let _insert = Map.insert_cont Order.int_compare in
-    let _lookup = Map.lookup_cont Order.int_compare in
+    let _insert = Map.insert Order.int in
+    let _lookup = Map.lookup Order.int in
     match layout with
     | Null -> return pos
     | Text data -> return (pos + (String.length data))
@@ -1212,7 +1212,7 @@ let solve layout tab width return =
     | Pack (index, layout1) ->
       _lookup index marks
         (fun _ ->
-          _insert index pos marks @@ fun marks1 ->
+          _insert index pos marks |> fun marks1 ->
           _next_comp layout1 head pos marks1 return)
         (fun pos1 ->
           let pos2 = max pos pos1 in
@@ -1220,8 +1220,8 @@ let solve layout tab width return =
     | Line (left, _right) -> _next_comp left head pos marks return
     | Comp (left, _right, _pad, _fix) -> _next_comp left head pos marks return
   and _measure layout head pos marks return =
-    let _insert = Map.insert_cont Order.int_compare in
-    let _lookup = Map.lookup_cont Order.int_compare in
+    let _insert = Map.insert Order.int in
+    let _lookup = Map.lookup Order.int in
     match layout with
     | Null -> return pos marks
     | Text data ->
@@ -1239,7 +1239,7 @@ let solve layout tab width return =
     | Pack (index, layout1) ->
       _lookup index marks
         (fun _ ->
-          _insert index pos marks @@ fun marks1 ->
+          _insert index pos marks |> fun marks1 ->
           _measure layout1 head pos marks1 return)
         (fun pos1 ->
           let pos2 = max pos pos1 in
@@ -1253,7 +1253,7 @@ let solve layout tab width return =
       _measure right false pos1 marks1 return
   in
   let rec _loop layout =
-    _visit layout true false 0 (Map.make ()) @@ fun change _marks layout1 ->
+    _visit layout true false 0 Map.empty @@ fun change _marks layout1 ->
     normalize layout1 @@ fun layout2 ->
     if change
     then _loop layout2
@@ -1263,8 +1263,8 @@ let solve layout tab width return =
 
 let render layout tab width return =
   let open Printf in
-  let _insert = Map.insert_cont Order.int_compare in
-  let _lookup = Map.lookup_cont Order.int_compare in
+  let _insert = Map.insert Order.int in
+  let _lookup = Map.lookup Order.int in
   let rec _print layout head pos marks return =
     match layout with
     | Null -> return pos marks ""
@@ -1286,7 +1286,7 @@ let render layout tab width return =
     | Pack (index, layout1) ->
       _lookup index marks
         (fun _ ->
-          _insert index pos marks @@ fun marks1 ->
+          _insert index pos marks |> fun marks1 ->
           _print layout1 head pos marks1 return)
         (fun pos1 ->
           let pos2 = max pos pos1 in
@@ -1305,5 +1305,5 @@ let render layout tab width return =
       return pos3 marks2 (sprintf "%s%s%s" left1 padding right1)
   in
   solve layout tab width @@ fun layout1 ->
-  _print layout1 true 0 (Map.make ()) @@ fun _pos _marks result ->
+  _print layout1 true 0 Map.empty @@ fun _pos _marks result ->
   return result

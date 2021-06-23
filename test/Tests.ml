@@ -1,4 +1,4 @@
-open Typeset_util
+open Cps_toolbox
 open Typeset
 open Spec
 open EDSL
@@ -34,8 +34,8 @@ let _normal_form layout =
 let _num_critical_comps tab marks layout return =
   let _fail () = assert false (* Invariant *) in
   let rec _visit head pos marks layout result return =
-    let _insert = Map.insert_cont Order.int_compare in
-    let _lookup = Map.lookup_cont Order.int_compare in
+    let _insert = Map.insert Order.int in
+    let _lookup = Map.lookup Order.int in
     match layout with
     | Null -> return result pos marks
     | Text data -> return result (pos + String.length data) marks
@@ -49,7 +49,7 @@ let _num_critical_comps tab marks layout return =
     | Pack (index, layout1) ->
       _lookup index marks
         (fun _ ->
-          _insert index pos marks @@ fun marks1 ->
+          _insert index pos marks |> fun marks1 ->
           _visit head pos marks1 layout1 result return)
         (fun pos1 ->
           _visit head (max pos pos1) marks layout1 result return)
@@ -64,8 +64,8 @@ let _num_critical_comps tab marks layout return =
       if 0 < pos3 - pos2 then return result2 pos3 marks2 else
       return (result2 + 1) pos3 marks2
   and _visit_fix head pos marks layout return =
-    let _insert = Map.insert_cont Order.int_compare in
-    let _lookup = Map.lookup_cont Order.int_compare in
+    let _insert = Map.insert Order.int in
+    let _lookup = Map.lookup Order.int in
     match layout with
     | Null -> return pos marks
     | Text data -> return (pos + (String.length data)) marks
@@ -78,7 +78,7 @@ let _num_critical_comps tab marks layout return =
     | Pack (index, layout1) ->
       _lookup index marks
         (fun _ ->
-          _insert index pos marks @@ fun marks1 ->
+          _insert index pos marks |> fun marks1 ->
           _visit_fix head pos marks1 layout1 return)
         (fun pos1 ->
           _visit_fix head (max pos pos1) marks layout1 return)
@@ -120,8 +120,8 @@ let _solved_form tab width layout =
       _measure true 0 marks layout @@ fun marks1 length ->
       return marks1 [(length, marks, layout)]
   and _measure head pos marks layout return =
-    let _insert = Map.insert_cont Order.int_compare in
-    let _lookup = Map.lookup_cont Order.int_compare in
+    let _insert = Map.insert Order.int in
+    let _lookup = Map.lookup Order.int in
     match layout with
     | Null -> return marks 0
     | Text data -> return marks (String.length data)
@@ -133,7 +133,7 @@ let _solved_form tab width layout =
     | Pack (index, layout1) ->
       _lookup index marks
         (fun _ ->
-          _insert index pos marks @@ fun marks1 ->
+          _insert index pos marks |> fun marks1 ->
           _measure head pos marks1 layout1 return)
         (fun pos1 ->
           let pos2 = max pos pos1 in
@@ -155,7 +155,7 @@ let _solved_form tab width layout =
       if 0 < num_comps then return false else
       _check lines' return
   in
-  _visit (Map.make ()) layout @@ fun _marks lines ->
+  _visit Map.empty layout @@ fun _marks lines ->
   _check lines (fun result -> result)
 
 (* Define tests *)

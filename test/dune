@@ -1,6 +1,9 @@
 (executable
   (name Tests)
-  (libraries qcheck typeset))
+  (libraries
+    typeset
+    cps_toolbox
+    qcheck))
 
 (rule
  (alias  runtest)
