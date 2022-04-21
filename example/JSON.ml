@@ -1,4 +1,5 @@
 open Cps_toolbox
+open Functional
 
 module AST = struct
 
@@ -34,7 +35,7 @@ let rec _visit_value value return =
   | JString content ->
     return (~$"\"" <!&> ~$content <!&> ~$"\"")
   | JObject members ->
-    List.fold
+    List.fold members
       (fun return -> return _no_sep null)
       (fun (key, value1) visit_members return ->
         visit_members @@ fun join members1 ->
@@ -42,10 +43,10 @@ let rec _visit_value value return =
         return _comma_sep (join
           (grp (~$key <!+> ~$":" <+> (nest (grp value2))))
           members1))
-      members @@ fun _join members2 ->
+      @@ fun _join members2 ->
     return (seq (~$"{" <!+> members2 <!+> ~$"}"))
   | JArray elements ->
-    List.fold
+    List.fold elements
       (fun return -> return _no_sep null)
       (fun element visit_elements return ->
         visit_elements @@ fun join elements1 ->
@@ -53,22 +54,23 @@ let rec _visit_value value return =
         return _comma_sep (join
           (grp element1)
           elements1))
-      elements @@ fun _join elements2 ->
+      @@ fun _join elements2 ->
     return (seq (~$"[" <!+> elements2 <!+> ~$"]"))
 and _visit_number number return =
   match number with
   | NInt value -> return ~$(string_of_int value)
   | NFloat value -> return ~$(string_of_float value)
 
-let value x r = _visit_value x r
+let value x =
+  _visit_value x identity
 
 end (* Layout *)
 
 module Print = struct
 
-let value value1 return =
-  Layout.value value1 @@ fun layout ->
-  Typeset.compile layout @@ fun document ->
-  Typeset.render document 2 80 return
+let value value1 =
+  Layout.value value1 |> fun layout ->
+  Typeset.compile layout |> fun document ->
+  Typeset.render document 2 80
 
 end (* Print *)

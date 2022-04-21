@@ -164,8 +164,8 @@ let spec_normalize_sound =
     ~name:"spec_normalize_sound"
     arbitrary_eDSL
     (fun eDSL ->
-      Spec.convert eDSL @@ fun layout ->
-      Spec.pre_normalize layout @@ fun layout1 ->
+      Spec.convert eDSL |> fun layout ->
+      Spec.pre_normalize layout |> fun layout1 ->
       _normal_form layout1)
 
 let spec_solve_sound =
@@ -176,8 +176,8 @@ let spec_solve_sound =
       small_nat
       small_nat)
     (fun (eDSL, tab, width) ->
-      Spec.convert eDSL @@ fun layout ->
-      Spec.solve layout tab width @@ fun layout1 ->
+      Spec.convert eDSL |> fun layout ->
+      Spec.solve layout tab width |> fun layout1 ->
       _solved_form tab width layout1)
 
 let _random_comp_tree x n =
@@ -200,8 +200,8 @@ let spec_solve_box_reflow =
     QCheck.(pair small_nat small_nat)
     (fun (count, width) ->
       let eDSL = QCheck.Gen.generate1 (_random_comp_tree "x" count) in
-      Spec.convert eDSL @@ fun layout ->
-      Spec.solve layout 0 width @@ fun layout1 ->
+      Spec.convert eDSL |> fun layout ->
+      Spec.solve layout 0 width |> fun layout1 ->
       let expected_num_lines =
         let _count = max 1 count in
         if width <= 0 then _count else
@@ -217,13 +217,13 @@ let impl_compile_normalizes =
     ~name:"impl_compile_normalizes"
     arbitrary_eDSL
     (fun eDSL ->
-      Typeset.compile eDSL @@ fun doc ->
-      Spec.undoc doc @@ fun layout ->
-      Spec.pre_normalize layout @@ fun layout1 ->
+      Typeset.compile eDSL |> fun doc ->
+      Spec.undoc doc |> fun layout ->
+      Spec.pre_normalize layout |> fun layout1 ->
       if not (layout = layout1) then begin
-        Spec.print_layout layout print_endline;
+        Spec.print_layout layout |> print_endline;
         print_endline "------------------------------------";
-        Spec.print_layout layout1 print_endline;
+        Spec.print_layout layout1 |> print_endline;
         print_endline "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@";
         false
       end else
@@ -234,14 +234,14 @@ let impl_spec_normalize_identity =
     ~name:"impl_spec_normalize_identity"
     arbitrary_eDSL
     (fun eDSL ->
-      Typeset.compile eDSL @@ fun doc ->
-      Spec.convert eDSL @@ fun layout ->
-      Spec.undoc doc @@ fun impl_layout ->
-      Spec.pre_normalize layout @@ fun spec_layout ->
+      Typeset.compile eDSL |> fun doc ->
+      Spec.convert eDSL |> fun layout ->
+      Spec.undoc doc |> fun impl_layout ->
+      Spec.pre_normalize layout |> fun spec_layout ->
       if not (impl_layout = spec_layout) then begin
-        Typeset.print doc print_endline;
+        Typeset.print doc |> print_endline;
         print_endline "------------------------------------";
-        Spec.print_layout spec_layout print_endline;
+        Spec.print_layout spec_layout |> print_endline;
         print_endline "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@";
         false
       end else
@@ -255,17 +255,17 @@ let impl_spec_render_identity =
       small_nat
       small_nat)
     (fun (eDSL, tab, width) ->
-      Typeset.compile eDSL @@ fun doc ->
-      Typeset.render doc tab width @@ fun output ->
-      Spec.convert eDSL @@ fun layout ->
-      Spec.render layout tab width @@ fun spec_output ->
+      Typeset.compile eDSL |> fun doc ->
+      Typeset.render doc tab width |> fun output ->
+      Spec.convert eDSL |> fun layout ->
+      Spec.render layout tab width |> fun spec_output ->
       if not (output = spec_output) then begin
-        Spec.undoc doc @@ fun layout1 ->
+        Spec.undoc doc |> fun layout1 ->
         print_endline output;
         print_endline "------------------------------------";
         print_endline spec_output;
         print_endline "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@";
-        Spec.print_layout layout1 print_endline;
+        Spec.print_layout layout1 |> print_endline;
         false
       end else
       true)

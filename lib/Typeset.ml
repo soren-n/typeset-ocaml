@@ -51,7 +51,7 @@ type broken =
   | BComp of broken * broken * attr
 
 (* Collapse broken sequences *)
-let _broken eDSL return =
+let _broken eDSL =
   let _mark eDSL return =
     let _null = BNull in
     let _text data = BText data in
@@ -118,7 +118,7 @@ let _broken eDSL return =
       else return (comp left1 right1 attr.pad attr.fix)
   in
   _mark eDSL @@ fun eDSL1 ->
-  _remove eDSL1 false return
+  _remove eDSL1 false identity
 
 type serial =
   | SNext of serial_term * serial_comp * serial
@@ -138,7 +138,7 @@ and serial_comp =
 (*
   Serialize in order to normalize
 *)
-let _serialize eDSL return =
+let _serialize eDSL =
   let _next term comp serial = SNext (term, comp, serial) in
   let _last term serial = SLast (term, serial) in
   let _past = SPast in
@@ -188,7 +188,7 @@ let _serialize eDSL return =
   in
   let id x = x in
   _visit 0 0 false id id _last id eDSL @@ fun _i _j result ->
-  return (result _past)
+  result _past
 
 type linear_doc =
   | LNil
@@ -209,7 +209,7 @@ and linear_comp =
 (*
   Lift newlines to spine
 *)
-let _linearize serial return =
+let _linearize serial =
   let _nil = LNil in
   let _cons obj doc = LCons (obj, doc) in
   let _next comp term obj = LNext (comp, term, obj) in
@@ -248,7 +248,7 @@ let _linearize serial return =
     | SGrp (index, comp1) -> _visit_comp comp1 (return <== (_grp index))
     | SSeq (index, comp1) -> _visit_comp comp1 (return <== (_seq index))
   in
-  _visit_serial identity serial return
+  _visit_serial identity serial identity
 
 type fixed_doc =
   | FEOD
@@ -275,7 +275,7 @@ and fixed_fix =
 (*
   Coalesce fixed comps
 *)
-let _fixed doc return =
+let _fixed doc =
   let _eod = FEOD in
   let _break obj doc = FBreak (obj, doc) in
   let _next item comp obj = FNext (item, comp, obj) in
@@ -337,7 +337,7 @@ let _fixed doc return =
       _visit_comp comp1 @@ fun is_fixed comp2 ->
       return is_fixed (_seq index comp2)
   in
-  _visit_doc doc return
+  _visit_doc doc identity
 
 type 'a property =
   | PGrp of 'a
@@ -410,7 +410,7 @@ and rebuild_term =
   | RBNest of rebuild_term
   | RBPack of int * rebuild_term
 
-let _structurize doc return =
+let _structurize doc =
   let _graphify doc return =
     let _eod = GEOD in
     let _break nodes pads doc = GBreak (nodes, pads, doc) in
@@ -899,7 +899,7 @@ let _structurize doc return =
   in
   _graphify doc @@ fun doc1 ->
   _solve doc1 @@ fun doc2 ->
-  _rebuild doc2 return
+  _rebuild doc2 identity
 
 type denull_doc =
   | DEOD
@@ -923,7 +923,7 @@ and denull_term =
 (*
   Remove null identities
 *)
-let _denull doc return =
+let _denull doc =
   let _eod = DEOD in
   let _line obj = DLine obj in
   let _empty doc = DEmpty doc in
@@ -1017,7 +1017,7 @@ let _denull doc return =
     | RBNest term1 -> _visit_term term1 none (some <== _nest)
     | RBPack (index, term1) -> _visit_term term1 none (some <== (_pack index))
   in
-  _visit_doc doc (fun () -> return _eod) return
+  _visit_doc doc (fun () -> _eod) identity
 
 type count =
   | Zero
@@ -1027,7 +1027,7 @@ type count =
 (*
   Remove grp and seq identities
 *)
-let _identities doc return =
+let _identities doc =
   let _eod = DEOD in
   let _empty doc = DEmpty doc in
   let _break obj doc = DBreak (obj, doc) in
@@ -1118,12 +1118,12 @@ let _identities doc return =
     _visit_doc doc return
   in
   _elim_seqs doc @@ fun doc1 ->
-  _elim_grps doc1 return
+  _elim_grps doc1 identity
 
 (*
   Reassociate after grp and seq removals
 *)
-let _reassociate doc return =
+let _reassociate doc =
   let _eod = DEOD in
   let _empty doc = DEmpty doc in
   let _break obj doc = DBreak (obj, doc) in
@@ -1157,7 +1157,7 @@ let _reassociate doc return =
       _visit_obj right partial @@ fun result ->
       _visit_obj left (__comp pad result) return
   in
-  _visit_doc doc return
+  _visit_doc doc identity
 
 type doc =
   | REOD
@@ -1183,7 +1183,7 @@ type prop =
 (*
   Rescope nest and pack.
 *)
-let _rescope doc return =
+let _rescope doc =
   let _eod = REOD in
   let _empty doc = REmpty doc in
   let _break obj doc = RBreak (obj, doc) in
@@ -1281,9 +1281,9 @@ let _rescope doc return =
     | DPack (index, term1) ->
       _visit_fix_term term1 (result <== (List.cons (_prop_pack index))) return
   in
-  _visit_doc doc return
+  _visit_doc doc identity
 
-let print doc return =
+let print doc =
   let open Printf in
   let rec _print_doc doc return =
     match doc with
@@ -1320,25 +1320,25 @@ let print doc return =
       _print_fix right @@ fun right_s ->
       return (sprintf "(Comp %s %s %b)" left_s right_s pad)
   in
-  _print_doc doc return
+  _print_doc doc identity
 
-let compile eDSL return =
-  _broken eDSL @@ fun eDSL1 ->
-  _serialize eDSL1 @@ fun eDSL2 ->
-  _linearize eDSL2 @@ fun doc ->
-  _fixed doc @@ fun doc1 ->
-  _structurize doc1 @@ fun doc2 ->
-  _denull doc2 @@ fun doc3 ->
-  _identities doc3 @@ fun doc4 ->
-  _reassociate doc4 @@ fun doc5 ->
-  _rescope doc5 return
+let compile eDSL =
+  _broken eDSL |> fun eDSL1 ->
+  _serialize eDSL1 |> fun eDSL2 ->
+  _linearize eDSL2 |> fun doc ->
+  _fixed doc |> fun doc1 ->
+  _structurize doc1 |> fun doc2 ->
+  _denull doc2 |> fun doc3 ->
+  _identities doc3 |> fun doc4 ->
+  _reassociate doc4 |> fun doc5 ->
+  _rescope doc5
 
 type state =
   { head : bool
   ; break : bool
   ; lvl : int
   ; pos : int
-  ; marks : (int, int) Map.map
+  ; marks : (int, int) Map.t
   }
 
 let make_state () =
@@ -1393,7 +1393,7 @@ let get_offset state return =
   get_pos state @@ fun pos ->
   return (max 0 (lvl - pos))
 
-let render doc tab width return =
+let render doc tab width =
   let _whitespace n = String.make n ' ' in
   let _pad n result return = return (result ^ (_whitespace n)) in
   let _measure obj state return =
@@ -1612,4 +1612,4 @@ let render doc tab width return =
       _visit_fix right state2 result2 return
   in
   _visit_doc doc (make_state ()) @@ fun _state result ->
-  return result
+  result

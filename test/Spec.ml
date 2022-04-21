@@ -19,7 +19,7 @@ type layout =
   | Line of layout * layout
   | Comp of layout * layout * bool * bool
 
-let print_layout layout return =
+let print_layout layout =
   let open Printf in
   let rec _visit layout return =
     match layout with
@@ -40,9 +40,9 @@ let print_layout layout return =
       _visit right @@ fun right1 ->
       return (sprintf "(Comp %s %s %b %b)" left1 right1 pad fix)
   in
-  _visit layout return
+  _visit layout identity
 
-let convert layout return =
+let convert layout =
   let _null = Null in
   let _text data = Text data in
   let _fix layout = Fix layout in
@@ -81,9 +81,9 @@ let convert layout return =
       return index2 (_comp left1 right1 attr.pad attr.fix)
   in
   _visit layout 0 @@ fun _index layout1 ->
-  return layout1
+  layout1
 
-let undoc doc return =
+let undoc doc =
   let _null = Null in
   let _text data = Text data in
   let _fix layout = Fix layout in
@@ -125,7 +125,7 @@ let undoc doc return =
       _visit_fix right @@ fun right1 ->
       return (_comp left1 right1 pad false)
   in
-  _visit_doc doc return
+  _visit_doc doc identity
 
 type broken =
   | BNull
@@ -138,7 +138,7 @@ type broken =
   | BLine of broken * broken
   | BComp of broken * broken * bool * bool
 
-let _elim_broken layout return =
+let _elim_broken layout =
   let _mark layout return =
     let _null = BNull in
     let _text data = BText data in
@@ -219,9 +219,9 @@ let _elim_broken layout return =
     _visit layout false return
   in
   _mark layout @@ fun layout1 ->
-  _remove layout1 return
+  _remove layout1 identity
 
-let _lift_lines layout return =
+let _lift_lines layout =
   let _null = Null in
   let _text data = Text data in
   let _fix layout = Fix layout in
@@ -301,11 +301,11 @@ let _lift_lines layout return =
     _visit layout @@ fun change layout1 ->
     if change
     then _loop layout1
-    else return layout1
+    else layout1
   in
   _loop layout
 
-let _drop_nest_pack layout return =
+let _drop_nest_pack layout =
   let _null = Null in
   let _text data = Text data in
   let _fix layout = Fix layout in
@@ -386,11 +386,11 @@ let _drop_nest_pack layout return =
     _visit layout @@ fun change layout1 ->
     if change
     then _loop layout1
-    else return layout1
+    else layout1
   in
   _loop layout
 
-let _drop_infix_fix layout return =
+let _drop_infix_fix layout =
   let _null = Null in
   let _text data = Text data in
   let _fix layout = Fix layout in
@@ -645,11 +645,11 @@ let _drop_infix_fix layout return =
     _visit layout @@ fun change layout1 ->
     if change
     then _loop layout1
-    else return layout1
+    else layout1
   in
   _loop layout
 
-let _reassociate layout return =
+let _reassociate layout =
   let _null = Null in
   let _text data = Text data in
   let _fix layout = Fix layout in
@@ -699,11 +699,11 @@ let _reassociate layout return =
     _visit layout @@ fun change layout1 ->
     if change
     then _loop layout1
-    else return layout1
+    else layout1
   in
   _loop layout
 
-let _denull layout return =
+let _denull layout =
   let _null = Null in
   let _text data = Text data in
   let _fix layout = Fix layout in
@@ -760,11 +760,11 @@ let _denull layout return =
     _visit layout @@ fun change layout1 ->
     if change
     then _loop layout1
-    else return layout1
+    else layout1
   in
   _loop layout
 
-let _identities layout return =
+let _identities layout =
   let _null = Null in
   let _text data = Text data in
   let _fix layout = Fix layout in
@@ -912,11 +912,11 @@ let _identities layout return =
     _visit layout true false @@ fun change layout1 ->
     if change
     then _loop layout1
-    else return layout1
+    else layout1
   in
   _loop layout
 
-let _lift_nest_pack layout return =
+let _lift_nest_pack layout =
   let _null = Null in
   let _text data = Text data in
   let _fix layout = Fix layout in
@@ -1052,11 +1052,11 @@ let _lift_nest_pack layout return =
     _visit layout @@ fun change layout1 ->
     if change
     then _loop layout1
-    else return layout1
+    else layout1
   in
   _loop layout
 
-let _clean_fix layout return =
+let _clean_fix layout =
   let _null = Null in
   let _text data = Text data in
   let _fix layout = Fix layout in
@@ -1100,29 +1100,29 @@ let _clean_fix layout return =
       _visit_fix right @@ fun right1 ->
       return (_comp left1 right1 pad)
   in
-  _visit layout return
+  _visit layout identity
 
-let pre_normalize layout return =
-  _elim_broken layout @@ fun layout1 ->
-  _lift_lines layout1 @@ fun layout2 ->
-  _drop_nest_pack layout2 @@ fun layout3 ->
-  _drop_infix_fix layout3 @@ fun layout4 ->
-  _reassociate layout4 @@ fun layout5 ->
-  _denull layout5 @@ fun layout6 ->
-  _identities layout6 @@ fun layout7 ->
-  _reassociate layout7 @@ fun layout8 ->
-  _lift_nest_pack layout8 @@ fun layout9 ->
-  _clean_fix layout9 return
+let pre_normalize layout =
+  _elim_broken layout |> fun layout1 ->
+  _lift_lines layout1 |> fun layout2 ->
+  _drop_nest_pack layout2 |> fun layout3 ->
+  _drop_infix_fix layout3 |> fun layout4 ->
+  _reassociate layout4 |> fun layout5 ->
+  _denull layout5 |> fun layout6 ->
+  _identities layout6 |> fun layout7 ->
+  _reassociate layout7 |> fun layout8 ->
+  _lift_nest_pack layout8 |> fun layout9 ->
+  _clean_fix layout9
 
-let normalize layout return =
-  _elim_broken layout @@ fun layout1 ->
-  _lift_lines layout1 @@ fun layout2 ->
-  _drop_nest_pack layout2 @@ fun layout3 ->
-  _identities layout3 @@ fun layout4 ->
-  _reassociate layout4  @@ fun layout5 ->
-  _lift_nest_pack layout5 return
+let normalize layout =
+  _elim_broken layout |> fun layout1 ->
+  _lift_lines layout1 |> fun layout2 ->
+  _drop_nest_pack layout2 |> fun layout3 ->
+  _identities layout3 |> fun layout4 ->
+  _reassociate layout4  |> fun layout5 ->
+  _lift_nest_pack layout5
 
-let solve layout tab width return =
+let solve layout tab width =
   let _null = Null in
   let _text data = Text data in
   let _fix layout = Fix layout in
@@ -1254,14 +1254,14 @@ let solve layout tab width return =
   in
   let rec _loop layout =
     _visit layout true false 0 Map.empty @@ fun change _marks layout1 ->
-    normalize layout1 @@ fun layout2 ->
+    normalize layout1 |> fun layout2 ->
     if change
     then _loop layout2
-    else return layout2
+    else layout2
   in
-  pre_normalize layout _loop
+  pre_normalize layout |> _loop
 
-let render layout tab width return =
+let render layout tab width =
   let open Printf in
   let _insert = Map.insert Order.int in
   let _lookup = Map.lookup Order.int in
@@ -1304,6 +1304,6 @@ let render layout tab width return =
       let padding = if pad then " " else "" in
       return pos3 marks2 (sprintf "%s%s%s" left1 padding right1)
   in
-  solve layout tab width @@ fun layout1 ->
+  solve layout tab width |> fun layout1 ->
   _print layout1 true 0 Map.empty @@ fun _pos _marks result ->
-  return result
+  result

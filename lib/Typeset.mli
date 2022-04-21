@@ -47,6 +47,6 @@ and doc_obj_fix =
   | RFText of string
   | RFComp of doc_obj_fix * doc_obj_fix * bool
 
-val compile : eDSL -> (doc -> 'a) -> 'a
-val render : doc -> int -> int -> (string -> 'a) -> 'a
-val print : doc -> (string -> 'a) -> 'a
+val compile : eDSL -> doc
+val render : doc -> int -> int -> string
+val print : doc -> string

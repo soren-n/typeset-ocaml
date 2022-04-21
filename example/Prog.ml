@@ -1,3 +1,6 @@
+open Cps_toolbox
+open Functional
+
 (* AST definitions *)
 module AST = struct
 
@@ -64,34 +67,34 @@ and _visit_value wrap value return =
     _visit_stmt body @@ fun body1 ->
     return (wrap (~$param <!+> ~$"=>" <+> (_indent body1)))
 
-let shape x r = _visit_shape _skip x r
-let stmt x r = _visit_stmt x r
-let expr x r = _visit_expr _skip x r
-let value x r = _visit_value _skip x r
+let shape x = _visit_shape _skip x identity
+let stmt x = _visit_stmt x identity
+let expr x = _visit_expr _skip x identity
+let value x = _visit_value _skip x identity
 
 end (* Layout *)
 
 (* Print functions *)
 module Print = struct
 
-let shape shape1 return =
-  Layout.shape shape1 @@ fun layout ->
-  Typeset.compile layout @@ fun document ->
-  Typeset.render document 2 80 return
+let shape shape1 =
+  Layout.shape shape1 |> fun layout ->
+  Typeset.compile layout |> fun document ->
+  Typeset.render document 2 80
 
-let stmt stmt1 return =
-  Layout.stmt stmt1 @@ fun layout ->
-  Typeset.compile layout @@ fun document ->
-  Typeset.render document 2 80 return
+let stmt stmt1 =
+  Layout.stmt stmt1 |> fun layout ->
+  Typeset.compile layout |> fun document ->
+  Typeset.render document 2 80
 
-let expr expr1 return =
-  Layout.expr expr1 @@ fun layout ->
-  Typeset.compile layout @@ fun document ->
-  Typeset.render document 2 80 return
+let expr expr1 =
+  Layout.expr expr1 |> fun layout ->
+  Typeset.compile layout |> fun document ->
+  Typeset.render document 2 80
 
-let value value1 return =
-  Layout.value value1 @@ fun layout ->
-  Typeset.compile layout @@ fun document ->
-  Typeset.render document 2 80 return
+let value value1 =
+  Layout.value value1 |> fun layout ->
+  Typeset.compile layout |> fun document ->
+  Typeset.render document 2 80
 
 end (* Print *)
